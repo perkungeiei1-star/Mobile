@@ -634,7 +634,7 @@ TabMixerV2:AddToggle("AutoMixFruit", {
             end
         end
     })
-    
+
     local ToggleQuestHaki = TabMain:AddToggle("AutoQuestHaki", {
     Title = "Auto Get Haki",
     Default = false,
@@ -1639,12 +1639,6 @@ local function runSpawnLoop()
 end
 
 
-TabMain:AddButton({
-Title = "Bounty Farm Point",
-Callback = function() teleportAFK({4519.38623046875, 217, 5781.06396484375}) end
-})
-
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -1653,20 +1647,6 @@ local humanoid = character:WaitForChild("Humanoid")
 local AutoTrashEnabled = false
 local autoTrashThread = nil
 local trashNames = {"Compass"}
-
-TabMain:AddToggle("Auto Drop Compass", {
-    Title = "Auto Drop Compass",
-    Default = false,
-    Callback = function(Value)
-        AutoTrashEnabled = Value
-        if AutoTrashEnabled then
-            print("[AutoTrash] ON")
-            startAutoTrash()
-        else
-            print("[AutoTrash] OFF")
-        end
-    end
-})
 
 local function realDropTool(tool)
     if not tool then return end
@@ -1685,10 +1665,11 @@ local function realDropTool(tool)
     end
 end
 
-function startAutoTrash()
+local function startAutoTrash()
     if autoTrashThread then return end
     autoTrashThread = task.spawn(function()
         while AutoTrashEnabled do
+
             for _, tool in ipairs(player.Backpack:GetChildren()) do
                 if table.find(trashNames, tool.Name) then
                     realDropTool(tool)
@@ -1709,14 +1690,39 @@ function startAutoTrash()
     end)
 end
 
+local function stopAutoTrash()
+    AutoTrashEnabled = false
+    autoTrashThread = nil
+end
+
+TabMain:AddToggle("AutoTrashToggle", {
+    Title = "Auto Trash (ทิ้ง Compass)",
+    Default = false,
+    Callback = function(Value)
+        AutoTrashEnabled = Value
+        if Value then
+            print("[AutoTrash] ON")
+            startAutoTrash()
+        else
+            print("[AutoTrash] OFF")
+            stopAutoTrash()
+        end
+    end
+})
+
 player.CharacterAdded:Connect(function(char)
     character = char
     humanoid = char:WaitForChild("Humanoid")
 end)
 
 
-
 task.spawn(runSpawnLoop)
+
+TabMain:AddButton({
+Title = "Bounty Farm Point",
+Callback = function() teleportAFK({4519.38623046875, 217, 5781.06396484375}) end
+})
+
 Window:SelectTab(1)
 print("Script loaded: Fruit Mixer Hub (Complete)")
 SaveManager:SetLibrary(Fluent)
